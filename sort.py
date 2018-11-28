@@ -214,7 +214,7 @@ class Sort(object):
 
     #create and initialise new trackers for unmatched detections
     for i in unmatched_dets:
-        trk = KalmanBoxTracker(dets[i,:]) 
+        trk = KalmanBoxTracker(dets[i,:])
         self.trackers.append(trk)
     i = len(self.trackers)
     for trk in reversed(self.trackers):
@@ -228,7 +228,7 @@ class Sort(object):
     if(len(ret)>0):
       return np.concatenate(ret)
     return np.empty((0,5))
-    
+
 def parse_args():
     """Parse input arguments."""
     parser = argparse.ArgumentParser(description='SORT demo')
@@ -250,20 +250,28 @@ if __name__ == '__main__':
       print('\n\tERROR: mot_benchmark link not found!\n\n    Create a symbolic link to the MOT benchmark\n    (https://motchallenge.net/data/2D_MOT_2015/#download). E.g.:\n\n    $ ln -s /path/to/MOT2015_challenge/2DMOT2015 mot_benchmark\n\n')
       exit()
     plt.ion()
-    fig = plt.figure() 
-  
+    fig = plt.figure()
+
   if not os.path.exists('output'):
     os.makedirs('output')
-  
+
   for seq in sequences:
     mot_tracker = Sort() #create instance of the SORT tracker
     seq_dets = np.loadtxt('data/%s/det.txt'%(seq),delimiter=',') #load detections
+    # print(seq_dets)
     with open('output/%s.txt'%(seq),'w') as out_file:
       print("Processing %s."%(seq))
       for frame in range(int(seq_dets[:,0].max())):
+        # print(frame)
         frame += 1 #detection and frame numbers begin at 1
         dets = seq_dets[seq_dets[:,0]==frame,2:7]
+
+        # print(dets)
+        # time.sleep(3)
         dets[:,2:4] += dets[:,0:2] #convert to [x1,y1,w,h] to [x1,y1,x2,y2]
+        # print(dets)
+        # time.sleep(3)
+
         total_frames += 1
 
         if(display):
@@ -275,16 +283,20 @@ if __name__ == '__main__':
 
         start_time = time.time()
         trackers = mot_tracker.update(dets)
+        # print(trackers)
+        # time.sleep(1)
         cycle_time = time.time() - start_time
         total_time += cycle_time
 
         for d in trackers:
           print('%d,%d,%.2f,%.2f,%.2f,%.2f,1,-1,-1,-1'%(frame,d[4],d[0],d[1],d[2]-d[0],d[3]-d[1]),file=out_file)
+          # time.sleep(1)
           if(display):
             d = d.astype(np.int32)
             ax1.add_patch(patches.Rectangle((d[0],d[1]),d[2]-d[0],d[3]-d[1],fill=False,lw=3,ec=colours[d[4]%32,:]))
             ax1.set_adjustable('box-forced')
-
+        print(trackers)
+        time.sleep(1)
         if(display):
           fig.canvas.flush_events()
           plt.draw()
@@ -293,6 +305,3 @@ if __name__ == '__main__':
   print("Total Tracking took: %.3f for %d frames or %.1f FPS"%(total_time,total_frames,total_frames/total_time))
   if(display):
     print("Note: to get real runtime results run without the option: --display")
-  
-
-
