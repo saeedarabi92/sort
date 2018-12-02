@@ -33,7 +33,8 @@ from sort_util import parse_args
 from sort_util import Sort
 
   # all train
-sequences = ['PETS09-S2L1','TUD-Campus','TUD-Stadtmitte','ETH-Bahnhof','ETH-Sunnyday','ETH-Pedcross2','KITTI-13','KITTI-17','ADL-Rundle-6','ADL-Rundle-8','Venice-2']
+sequences = ['PETS09-S2L1']
+# ,'TUD-Campus','TUD-Stadtmitte','ETH-Bahnhof','ETH-Sunnyday','ETH-Pedcross2','KITTI-13','KITTI-17','ADL-Rundle-6','ADL-Rundle-8','Venice-2']
 args = parse_args()
 display = args.display
 phase = 'train'
@@ -64,38 +65,46 @@ for seq in sequences:
             # print(dets)
             # time.sleep(3)
             dets[:,2:4] += dets[:,0:2] #convert to [x1,y1,w,h] to [x1,y1,x2,y2]
-            # print(dets)
-            # time.sleep(3)
+            # print('det:', dets)
+            # time.sleep(1)
 
             total_frames += 1
-
-        if(display):
-            ax1 = fig.add_subplot(111, aspect='equal')
-            fn = 'mot_benchmark/%s/%s/img1/%06d.jpg'%(phase,seq,frame)
-            im =io.imread(fn)
-            ax1.imshow(im)
-            plt.title(seq+' Tracked Targets')
-
-        start_time = time.time()
-        trackers = mot_tracker.update(dets)
-        print(trackers)
-        time.sleep(1)
-        cycle_time = time.time() - start_time
-        total_time += cycle_time
-
-        for d in trackers:
-            print('%d,%d,%.2f,%.2f,%.2f,%.2f,1,-1,-1,-1'%(frame,d[4],d[0],d[1],d[2]-d[0],d[3]-d[1]),file=out_file)
+            # print('dets: ', dets)
+            # print('frame number: ', frame)
             # time.sleep(1)
+
+            if(display):
+                ax1 = fig.add_subplot(111, aspect='equal')
+                fn = 'mot_benchmark/%s/%s/img1/%06d.jpg'%(phase,seq,frame)
+                im =io.imread(fn)
+                ax1.imshow(im)
+                plt.title(seq+' Tracked Targets')
+
+            # print('det shape: ' , np.shape(dets))
+            print('det:\n' , dets)
+            # print('')
+            # time.sleep(1)
+            start_time = time.time()
+            trackers = mot_tracker.update(dets)
+            # print('trackers: ',trackers)
+            time.sleep(1)
+            print('\n \n')
+            cycle_time = time.time() - start_time
+            total_time += cycle_time
+
+            # for d in trackers:
+            #     print('%d,%d,%.2f,%.2f,%.2f,%.2f,1,-1,-1,-1'%(frame,d[4],d[0],d[1],d[2]-d[0],d[3]-d[1]),file=out_file)
+                # time.sleep(1)
             if(display):
                 d = d.astype(np.int32)
                 ax1.add_patch(patches.Rectangle((d[0],d[1]),d[2]-d[0],d[3]-d[1],fill=False,lw=3,ec=colours[d[4]%32,:]))
                 ax1.set_adjustable('box-forced')
-        print(trackers)
-        time.sleep(1)
-        if(display):
-            fig.canvas.flush_events()
-            plt.draw()
-            ax1.cla()
+            # print(trackers)
+            # time.sleep(1)
+            if(display):
+                fig.canvas.flush_events()
+                plt.draw()
+                ax1.cla()
 
 print("Total Tracking took: %.3f for %d frames or %.1f FPS"%(total_time,total_frames,total_frames/total_time))
 if(display):

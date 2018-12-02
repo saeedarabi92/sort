@@ -176,18 +176,28 @@ class Sort(object):
     """
     self.frame_count += 1
     #get predicted locations from existing trackers.
-    trks = np.zeros((len(self.trackers),5))
+    trks = np.zeros((len(self.trackers),6))
+    # print('trks: ', trks)
     to_del = []
     ret = []
     for t,trk in enumerate(trks):
+      print('t', t)
+      # print('trk:', trk)
+      # print('self.tracker: ', self.trackers)
+      # print('before pos:', self.trackers[t].predict())
       pos = self.trackers[t].predict()[0]
-      trk[:] = [pos[0], pos[1], pos[2], pos[3], 0]
+      print('pos ', pos)
+      trk[:] = [pos[0], pos[1], pos[2], pos[3], 0, 0]
       if(np.any(np.isnan(pos))):
         to_del.append(t)
     trks = np.ma.compress_rows(np.ma.masked_invalid(trks))
+    # print('trks\n', trks)
     for t in reversed(to_del):
       self.trackers.pop(t)
     matched, unmatched_dets, unmatched_trks = associate_detections_to_trackers(dets,trks)
+    print('matched: \n',matched)
+    print('unmatched_dets: \n', unmatched_dets)
+    print('unmatched_trks: \n', unmatched_trks)
 
     #update matched trackers with assigned detections
     for t,trk in enumerate(self.trackers):
